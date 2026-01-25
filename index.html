@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청송대: 30초 타임어택</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Press+Start+2P&display=swap');
+
+        body {
+            background-color: #1a1a1a;
+            color: #eee;
+            font-family: 'Black Han Sans', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        h1 { text-shadow: 2px 2px 0px #8b0000; margin-bottom: 5px; font-size: 1.8rem; text-align: center;}
+        p { color: #aaa; font-size: 0.8rem; margin-bottom: 20px; text-align: center; }
+
+        #game-area {
+            position: relative;
+            display: flex;
+            gap: 20px;
+            background: #2b2b2b;
+            padding: 20px;
+            border: 4px solid #555;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        #fishing-bar-bg {
+            width: 50px;
+            height: 350px;
+            background-color: #111;
+            border: 2px solid #444;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #target-zone {
+            width: 100%;
+            height: 80px; 
+            background-color: rgba(50, 205, 50, 0.5);
+            position: absolute;
+            bottom: 50px; 
+            left: 0;
+            border-top: 2px solid #32cd32;
+            border-bottom: 2px solid #32cd32;
+        }
+
+        #player-bar {
+            width: 36px;
+            height: 40px;
+            background-color: #ffcc00;
+            position: absolute;
+            bottom: 150px; 
+            left: 7px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px #ffcc00;
+            transition: background-color 0.1s; 
+        }
+
+        #overlay-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 20;
+            flex-direction: column;
+            text-align: center;
+            pointer-events: none; 
+        }
+        
+        #countdown-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 4rem;
+            color: #ffcc00;
+            text-shadow: 4px 4px 0 #8b0000;
+        }
+
+        #time-container {
+            width: 20px;
+            height: 350px;
+            background-color: #333;
+            border: 1px solid #555;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        #time-fill {
+            width: 100%; height: 100%; 
+            background: linear-gradient(to top, #00bfff, #1e90ff);
+            transition: height 0.1s linear;
+        }
+        #time-label {
+            position: absolute; top: -25px; left: -15px; width: 50px;
+            text-align: center; font-size: 0.7rem; color: #1e90ff;
+        }
+        #time-text {
+            position: absolute; bottom: 5px; left: 0; width: 100%;
+            text-align: center; font-size: 0.6rem; color: #fff; font-weight: bold;
+        }
+
+        .info-panel {
+            width: 240px; /* 조금 더 넓게 */
+            background: #222; padding: 15px; border-radius: 8px; border: 1px solid #444;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .info-box { text-align: center; }
+        .score-display {
+            font-family: 'Press Start 2P', cursive; color: #00ff00; font-size: 1.4rem; margin: 10px 0; text-shadow: 0 0 5px #006400;
+        }
+        .rank-list { list-style: none; padding: 0; margin: 0; text-align: left; font-size: 0.8rem; color: #ccc; }
+        .rank-list li { margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px; display: flex; justify-content: space-between; }
+        .rank-score { color: #ffcc00; font-family: 'Press Start 2P', cursive; font-size: 0.7rem;}
+        input[type="text"] { width: 90%; padding: 8px; background: #333; border: 1px solid #555; color: white; text-align: center; font-family: 'Black Han Sans', sans-serif; margin-bottom: 5px; }
+        #status-msg { margin-top: 15px; font-size: 1.1rem; color: #888; min-height: 24px; text-align: center; }
+        
+        /* [추가] 전체 목표 바 스타일 */
+        .goal-container {
+            margin-top: 10px;
+            text-align: left;
+        }
+        .goal-bar-bg {
+            width: 100%; height: 12px; background: #444; border-radius: 6px; overflow: hidden; margin-top: 5px;
+        }
+        .goal-bar-fill {
+            width: 0%; height: 100%; background: linear-gradient(to right, #ff4444, #ffcc00);
+            transition: width 1s ease-out;
+        }
+        .goal-text { font-size: 0.7rem; color: #aaa; display: flex; justify-content: space-between; margin-top: 3px; }
+        .total-val { color: #ffcc00; font-family: 'Press Start 2P'; font-size: 0.7rem; }
+
+        .controls { margin-top: 20px; display: flex; gap: 10px; }
+        .btn {
+            padding: 12px 20px; color: white; border: none; border-radius: 4px; cursor: pointer;
+            font-family: inherit; font-size: 1rem; box-shadow: 0 4px 0 rgba(0,0,0,0.5); pointer-events: auto;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
+        .btn-start { background: #8b0000; }
+        .btn-small { padding: 5px 10px; font-size: 0.8rem; margin-top: 0; background: #555; }
+        .btn-reset { background: #333; color: #666; font-size: 0.7rem; padding: 3px 8px; margin-top: 5px; border: 1px solid #444; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(100%); }
+
+    </style>
+</head>
+<body>
+
+    <h1>⏱️ 30초 베이스캠프</h1>
+    <p>30초 동안 집중해서 최대한 많은 점수를 획득하세요!</p>
+
+    <div class="main-container">
+        <div id="game-area">
+            <div id="fishing-bar-bg">
+                <div id="target-zone"></div>
+                <div id="player-bar"></div>
+            </div>
+            <div id="time-container">
+                <div id="time-label">남은시간</div>
+                <div id="time-fill"></div>
+                <div id="time-text">30</div>
+            </div>
+            
+            <div id="overlay-screen">
+                <div id="countdown-text">READY</div>
+                <button id="btn-restart" class="btn btn-start" style="display:none; margin-top:20px;" onclick="startSequence()">다시 도전</button>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-box">
+                <div style="font-size: 0.9rem; color:#aaa;">현재 점수</div>
+                <div id="current-score" class="score-display">0</div>
+                <div style="font-size: 0.8rem; color:#aaa; margin-top:15px;">최고 기록 (High Score)</div>
+                <div id="best-score" style="color:#ffcc00; font-family:'Press Start 2P'; margin-top:5px;">0</div>
+            </div>
+            
+            <hr style="width:100%; border:0; border-top:1px solid #444;">
+            
+            <div class="info-box">
+                <input type="text" id="username-input" placeholder="이름 입력" maxlength="8">
+                <button class="btn btn-small" onclick="updateName()">이름 저장</button>
+                <button class="btn btn-reset" onclick="resetUserIdentity()">🔄 ID 초기화 (테스트)</button>
+            </div>
+            
+            <div class="info-box">
+                <div style="font-size: 0.8rem; color:#aaa; margin-bottom:10px;">🏆 명예의 전당 (Top 5)</div>
+                <ul id="leaderboard" class="rank-list"><li>로딩 중...</li></ul>
+                <button class="btn btn-small" style="background:#444; margin-top:10px;" onclick="loadLeaderboard()">새로고침</button>
+            </div>
+
+            <hr style="width:100%; border:0; border-top:1px solid #444;">
+
+            <div class="info-box">
+                <div style="font-size: 0.85rem; color:#aaa; margin-bottom:5px;">🌍 전체 생존자 기여도</div>
+                <div class="total-val" id="global-score-text">0 / 30000</div>
+                <div class="goal-container">
+                    <div class="goal-bar-bg">
+                        <div id="global-progress" class="goal-bar-fill"></div>
+                    </div>
+                    <div class="goal-text">
+                        <span>현재</span>
+                        <span>목표: 3만</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-msg">준비됨</div>
+
+    <div class="controls">
+        <button id="btn-main-start" class="btn btn-start" onclick="startSequence()">⚔️ 30초 챌린지 시작</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2zLCI08iXD5eV-pC7Zav9SodGwNyHsxE",
+            authDomain: "basecamp-1254b.firebaseapp.com",
+            projectId: "basecamp-1254b",
+            storageBucket: "basecamp-1254b.firebasestorage.app",
+            messagingSenderId: "587183782376",
+            appId: "1:587183782376:web:16cbbbface1cf8f0d18c5d",
+            measurementId: "G-H5T9YJZ21T"
+        };
+
+        let db;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log("Firebase 연결 성공");
+        } catch(e) {
+            console.error("Firebase 연결 오류:", e);
+            document.getElementById('status-msg').innerText = "DB 연결 실패";
+        }
+
+        let userId = localStorage.getItem('cs_survivor_id');
+        let userName = localStorage.getItem('cs_survivor_name') || "생존자_" + Math.floor(Math.random()*1000);
+
+        if (!userId) {
+            userId = 'user_' + Date.now();
+            localStorage.setItem('cs_survivor_id', userId);
+        }
+        document.getElementById('username-input').value = userName;
+
+        async function loadUserData() {
+            if(!db) return;
+            try {
+                const docRef = doc(db, "scores_30s", userId); 
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('best-score').innerText = data.score || 0;
+                    if(data.name) {
+                        userName = data.name;
+                        document.getElementById('username-input').value = userName;
+                        localStorage.setItem('cs_survivor_name', userName);
+                    }
+                }
+                loadLeaderboard();
+                calculateGlobalTotal(); // [추가] 전체 합계 계산
+            } catch (e) { console.error(e); }
+        }
+
+        window.updateName = async () => {
+            if(!db) return alert("DB 연결 안됨");
+            const newName = document.getElementById('username-input').value;
+            if(!newName) return alert("이름을 입력하세요!");
+            userName = newName;
+            localStorage.setItem('cs_survivor_name', userName);
+            alert("이름 저장 완료 (다음 게임 종료 시 반영)");
+        }
+
+        window.resetUserIdentity = () => {
+            if(confirm("기록을 남겨두고 새 신분으로 다시 시작합니까?")) {
+                localStorage.removeItem('cs_survivor_id');
+                localStorage.removeItem('cs_survivor_name');
+                location.reload();
+            }
+        }
+
+        window.loadLeaderboard = async () => {
+            if(!db) return;
+            const list = document.getElementById('leaderboard');
+            list.innerHTML = "<li>불러오는 중...</li>";
+            try {
+                const q = query(collection(db, "scores_30s"), orderBy("score", "desc"), limit(5));
+                const querySnapshot = await getDocs(q);
+                list.innerHTML = "";
+                
+                if (querySnapshot.empty) {
+                    list.innerHTML = "<li>기록 없음</li>";
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const d = doc.data();
+                    const safeName = d.name ? (d.name.length > 6 ? d.name.substring(0,6)+".." : d.name) : "익명";
+                    const li = document.createElement("li");
+                    li.innerHTML = `<span>${safeName}</span> <span class="rank-score">${d.score}</span>`;
+                    list.appendChild(li);
+                });
+            } catch (e) { 
+                console.error(e); 
+                list.innerHTML = "<li>랭킹 로드 실패</li>";
+            }
+        }
+
+        // [추가된 기능] 전체 점수 합계 계산 함수
+        async function calculateGlobalTotal() {
+            if(!db) return;
+            try {
+                const q = query(collection(db, "scores_30s"));
+                const querySnapshot = await getDocs(q);
+                let total = 0;
+                
+                querySnapshot.forEach((doc) => {
+                    total += (doc.data().score || 0);
+                });
+
+                // UI 업데이트
+                const goal = 30000;
+                document.getElementById('global-score-text').innerText = `${total.toLocaleString()} / ${goal.toLocaleString()}`;
+                
+                let percent = (total / goal) * 100;
+                if(percent > 100) percent = 100;
+                document.getElementById('global-progress').style.width = percent + "%";
+
+            } catch(e) {
+                console.error("합계 계산 실패:", e);
+            }
+        }
+
+        window.saveScore = async (finalScore) => {
+            if(!db) return;
+            try {
+                const docRef = doc(db, "scores_30s", userId);
+                const docSnap = await getDoc(docRef);
+                let currentHigh = 0;
+                if(docSnap.exists()) currentHigh = docSnap.data().score || 0;
+
+                if (finalScore > currentHigh) {
+                    await setDoc(docRef, {
+                        score: finalScore,
+                        name: userName,
+                        date: new Date().toISOString()
+                    });
+                    document.getElementById('best-score').innerText = finalScore;
+                    document.getElementById('status-msg').innerText = "🎉 신기록 저장됨!";
+                    loadLeaderboard();
+                    calculateGlobalTotal(); // 신기록 갱신 시 전체 합계도 다시 계산
+                } else {
+                    document.getElementById('status-msg').innerText = "게임 종료 (최고 기록: " + currentHigh + ")";
+                    // 기록 갱신 안 해도 참여했으니 합계 업데이트 (실시간 반영 느낌 위해)
+                    calculateGlobalTotal();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        loadUserData();
+    </script>
+
+    <script>
+        // ---------------------------------------------------------
+        // 🎮 게임 로직 (수정없음)
+        // ---------------------------------------------------------
+        const playerBar = document.getElementById('player-bar');
+        const targetZone = document.getElementById('target-zone');
+        const timeFill = document.getElementById('time-fill');
+        const timeText = document.getElementById('time-text');
+        const statusMsg = document.getElementById('status-msg');
+        const scoreDisplay = document.getElementById('current-score');
+        
+        const overlay = document.getElementById('overlay-screen');
+        const countdownText = document.getElementById('countdown-text');
+        const btnRestart = document.getElementById('btn-restart');
+        const btnMainStart = document.getElementById('btn-main-start');
+
+        const containerHeight = 350;
+        const GAME_DURATION = 30; 
+
+        const gravity = 0.2; 
+        const lift = -0.4;   
+        const bounce = -0.2;     
+
+        let playerPos = 150; 
+        let playerVelocity = 0; 
+        
+        let targetPos = 50;
+        let targetSpeed = 1.2;
+        let targetDirection = 1; 
+        let targetChangeTimer = 0; 
+
+        let isPlaying = false; 
+        let isCountingDown = false;
+        let isMouseDown = false;
+        
+        let currentScore = 0;
+        let timeLeft = GAME_DURATION;
+        let gameLoopId;
+
+        function handlePress(e) { 
+            if(e.type === 'keydown' && e.code !== 'Space') return;
+            if(e.type === 'keydown') e.preventDefault(); 
+            isMouseDown = true; 
+        }
+        function handleRelease(e) { 
+            if(e.type === 'keyup' && e.code !== 'Space') return;
+            isMouseDown = false; 
+        }
+
+        window.addEventListener('mousedown', handlePress);
+        window.addEventListener('mouseup', handleRelease);
+        window.addEventListener('touchstart', handlePress, {passive: false});
+        window.addEventListener('touchend', handleRelease);
+        window.addEventListener('keydown', handlePress);
+        window.addEventListener('keyup', handleRelease);
+
+        function startSequence() {
+            if (isPlaying || isCountingDown) return;
+            
+            isCountingDown = true;
+            
+            overlay.style.display = 'flex';
+            overlay.style.pointerEvents = 'none';
+            btnRestart.style.display = 'none'; 
+            btnMainStart.disabled = true;
+            statusMsg.innerText = "카운트다운...";
+            
+            currentScore = 0;
+            scoreDisplay.innerText = "0";
+            timeLeft = GAME_DURATION;
+            updateTimeUI();
+            
+            playerPos = 150;
+            playerVelocity = 0;
+            playerBar.style.bottom = playerPos + 'px';
+
+            let count = 3;
+            countdownText.innerText = count;
+            countdownText.style.color = "#ffcc00";
+            countdownText.style.fontSize = "4rem";
+            
+            let cdInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownText.innerText = count;
+                } else if (count === 0) {
+                    clearInterval(cdInterval);
+                    countdownText.innerText = "GO!";
+                    countdownText.style.color = "#ff4444";
+                    
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        overlay.style.pointerEvents = 'auto';
+                    }, 500);
+
+                    startGame(); 
+                }
+            }, 1000);
+        }
+
+        function startGame() {
+            isPlaying = true;
+            isCountingDown = false;
+            
+            statusMsg.innerText = "🔥 작전 개시!";
+            statusMsg.style.color = "#eee";
+            
+            document.activeElement.blur();
+            cancelAnimationFrame(gameLoopId);
+            gameLoop();
+        }
+
+        function stopGame() {
+            isPlaying = false;
+            cancelAnimationFrame(gameLoopId);
+            
+            overlay.style.display = 'flex';
+            overlay.style.pointerEvents = 'auto'; 
+            countdownText.innerText = "TIME OVER";
+            countdownText.style.color = "#fff";
+            countdownText.style.fontSize = "2.5rem"; 
+            
+            btnRestart.style.display = 'inline-block';
+            btnRestart.innerText = `점수: ${Math.floor(currentScore)} (다시하기)`;
+            
+            statusMsg.innerText = "기록 저장 중...";
+            btnMainStart.disabled = false;
+
+            if(window.saveScore) window.saveScore(Math.floor(currentScore));
+        }
+
+        function updateTimeUI() {
+            let pct = (timeLeft / GAME_DURATION) * 100;
+            timeFill.style.height = pct + '%';
+            timeText.innerText = Math.ceil(timeLeft);
+            
+            if (timeLeft <= 5) timeFill.style.background = "#ff0000"; 
+            else timeFill.style.background = "linear-gradient(to top, #00bfff, #1e90ff)";
+        }
+
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            // 시간
+            timeLeft -= 0.016; 
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                updateTimeUI();
+                stopGame();
+                return;
+            }
+            updateTimeUI();
+
+            // 물리
+            if (isMouseDown) playerVelocity += lift; 
+            playerVelocity += gravity; 
+            playerPos -= playerVelocity; 
+
+            // 바닥/천장 충돌
+            if (playerPos < 0) {
+                playerPos = 0;
+                playerVelocity *= bounce; 
+                if(Math.abs(playerVelocity) < 0.5) playerVelocity = 0; 
+            }
+            if (playerPos > containerHeight - 40) { 
+                playerPos = containerHeight - 40;
+                playerVelocity *= bounce; 
+            }
+
+            // 타겟 이동
+            targetChangeTimer++;
+            if (targetChangeTimer > 50) { 
+                targetChangeTimer = 0;
+                if (Math.random() > 0.6) targetDirection *= -1; 
+                targetSpeed = Math.random() * 1.5 + 0.5; 
+            }
+            targetPos += targetSpeed * targetDirection;
+
+            if (targetPos < 0) { targetPos = 0; targetDirection = 1; }
+            if (targetPos > containerHeight - 80) { targetPos = containerHeight - 80; targetDirection = -1; }
+
+            // 판정
+            let playerCenter = playerPos + 20; 
+            let targetBottom = targetPos;
+            let targetTop = targetPos + 80;
+
+            let isOverlap = playerCenter > targetBottom && playerCenter < targetTop;
+
+            if (isOverlap) {
+                playerBar.style.backgroundColor = "#ffcc00"; 
+                currentScore += 1; 
+            } else {
+                playerBar.style.backgroundColor = "#777"; 
+            }
+
+            // 그리기 (여기가 안되면 안움직임)
+            playerBar.style.bottom = playerPos + 'px';
+            targetZone.style.bottom = targetPos + 'px';
+
+            scoreDisplay.innerText = Math.floor(currentScore);
+
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
