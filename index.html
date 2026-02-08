@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>청송대: 30초 타임어택</title>
+    <title>베이스캠프 수리</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Press+Start+2P&display=swap');
 
@@ -164,7 +164,7 @@
 </head>
 <body>
 
-    <h1>⏱️ 30초 베이스캠프</h1>
+    <h1>베이스캠프 수리</h1>
     <p>30초 동안 집중해서 최대한 많은 점수를 획득하세요!</p>
 
     <div class="main-container">
@@ -217,7 +217,7 @@
                     </div>
                     <div class="goal-text">
                         <span>현재</span>
-                        <span>목표: 3만</span>
+                        <span>목표: 3만 </span>
                     </div>
                 </div>
             </div>
@@ -227,7 +227,7 @@
     <div id="status-msg">준비됨</div>
 
     <div class="controls">
-        <button id="btn-main-start" class="btn btn-start" onclick="startSequence()">⚔️ 30초 챌린지 시작</button>
+        <button id="btn-main-start" class="btn btn-start" onclick="startSequence()">수리 시작</button>
     </div>
 
     <script type="module">
@@ -292,7 +292,7 @@
         }
 
         window.resetUserIdentity = () => {
-            if(confirm("기록을 남겨두고 새 신분으로 다시 시작합니까?")) {
+            if(confirm("기록을 남겨두고 새 이름으로 다시 시작합니까?")) {
                 localStorage.removeItem('cs_survivor_id');
                 localStorage.removeItem('cs_survivor_name');
                 location.reload();
