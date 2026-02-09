@@ -210,9 +210,10 @@
 
             <div class="info-box">
                 <div style="font-size: 0.85rem; color:#aaa; margin-bottom:5px;">🌍 전체 생존자 기여도</div>
-                <div class="total-val" id="global-score-text">0 / 30000</div>
+                <div class="total-val" id="global-score-text">0 / 35000</div>
                 <div class="goal-container">
                     <div class="goal-bar-bg">
+                    
                         <div id="global-progress" class="goal-bar-fill"></div>
                     </div>
                     <div class="goal-text">
@@ -344,7 +345,7 @@
 
                 
                 // UI 업데이트
-                const goal = 30000;
+                const goal = 35000;
                 document.getElementById('global-score-text').innerText = `${total.toLocaleString()} / ${goal.toLocaleString()}`;
                 
                 let percent = (total / goal) * 100;
