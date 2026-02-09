@@ -338,6 +338,11 @@
                     total += (doc.data().score || 0);
                 });
 
+
+                // 지금은 보너스 없이 실제 점수만 표시
+                total += 0;
+
+                
                 // UI 업데이트
                 const goal = 30000;
                 document.getElementById('global-score-text').innerText = `${total.toLocaleString()} / ${goal.toLocaleString()}`;
